@@ -7,7 +7,6 @@ import (
 	"time"
 )
 
-// Logstash formatter
 type LogStashFormatter struct {
 	Source string
 	Tags   []string

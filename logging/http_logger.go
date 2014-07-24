@@ -1,7 +1,6 @@
 package logging
 
 import (
-	"fmt"
 	golog "github.com/op/go-logging"
 	stdlog "log"
 	"net/http"
@@ -20,45 +19,41 @@ type Formatter interface {
 }
 
 type HTTPLogger struct {
-	name        string
-	Backends    []int
-	formatter   Formatter
-	destination *golog.Logger
+	name          string
+	Backends      []int
+	formatter     Formatter
+	destination   *golog.Logger
+	MemoryBackend *golog.MemoryBackend // for testing
 }
 
 // NewHTTPLogger constructor
 func NewHTTPLogger(name string, backends []int, formatter Formatter) (*HTTPLogger, error) {
 	destination := golog.MustGetLogger(name)
 
-	// Customize the output format
-	// golog.SetFormatter(golog.MustStringFormatter("▶ %{level:.1s} 0x%{id:x} %{message}"))
-
 	requiredBackends := make([]golog.Backend, 0)
 	var logBackend golog.Backend
+	var memBackend *golog.MemoryBackend
 
 	for _, backend := range backends {
 		switch backend {
 		case BackendStdOut:
-			fmt.Println("stdout")
 			logBackend = golog.NewLogBackend(os.Stderr, "", stdlog.LstdFlags|stdlog.Lshortfile)
 			requiredBackends = append(requiredBackends, logBackend)
 		case BackendSysLog:
-			fmt.Println("syslog")
 			logBackend, err := golog.NewSyslogBackend(name)
 			if err != nil {
 				stdlog.Fatal("Could not setup syslog backend.", err)
 			}
 			requiredBackends = append(requiredBackends, logBackend)
 		case BackendMemory:
-			fmt.Println("mem")
-			logBackend = golog.NewMemoryBackend(1024)
+			memBackend = golog.NewMemoryBackend(1024)
+			logBackend = memBackend
 
 			requiredBackends = append(requiredBackends, logBackend)
 		}
 
 	}
 
-	fmt.Println("len backends", len(requiredBackends))
 	if len(requiredBackends) == 0 {
 		stdlog.Fatal("Please supply at least one backend!")
 	}
@@ -66,7 +61,7 @@ func NewHTTPLogger(name string, backends []int, formatter Formatter) (*HTTPLogge
 	// Set the backend to whatever backends were specified
 	golog.SetBackend(requiredBackends...)
 
-	return &HTTPLogger{name: name, Backends: backends, formatter: formatter, destination: destination}, nil
+	return &HTTPLogger{name: name, Backends: backends, formatter: formatter, destination: destination, MemoryBackend: memBackend}, nil
 
 }
 
