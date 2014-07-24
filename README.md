@@ -1,4 +1,4 @@
-go-http-logger
+go-request-logger
 ==============
 
-A simple HTTP Logger for Go supporting multiple log destinations and formatters.
+A simple HTTP request logger for Go supporting multiple log destinations and formatters.
