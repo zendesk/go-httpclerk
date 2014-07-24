@@ -1,39 +1,51 @@
 package logging
 
 import (
+	golog "github.com/op/go-logging"
+	stdlog "log"
 	"net/http"
+	"os"
 	"strconv"
 )
 
-// Log levels to control the logging output.
 const (
-	LevelDebug = iota
-	LevelInfo
-	LevelWarning
-	LevelError
-	LevelCritical
+	BackendStdOut = iota
+	BackendSysLog
+	BackendMemory
 )
-
-type LevelLogger interface {
-	Debug(info, msg string)
-	Info(info, msg string)
-	Warning(info, msg string)
-	Error(info, msg string)
-	Critical(info, msg string)
-}
 
 type Formatter interface {
 	Format(interface{}) (string, error)
 }
 
 type HTTPLogger struct {
-	destination LevelLogger
-	fmt         Formatter
+	name        string
+	Backends    []int
+	formatter   Formatter
+	destination *golog.Logger
 }
 
 // NewHTTPLogger constructor
-func NewHTTPLogger(dest LevelLogger, formatter Formatter) (*HTTPLogger, error) {
-	return &HTTPLogger{destination: dest, fmt: formatter}, nil
+func NewHTTPLogger(name string, backends []int, formatter Formatter) (*HTTPLogger, error) {
+	destination := golog.MustGetLogger(name)
+
+	// Customize the output format
+	// golog.SetFormatter(golog.MustStringFormatter("▶ %{level:.1s} 0x%{id:x} %{message}"))
+
+	// Setup one stdout and one syslog backend.
+	logBackend := golog.NewLogBackend(os.Stderr, "", stdlog.LstdFlags|stdlog.Lshortfile)
+	logBackend.Color = true
+
+	syslogBackend, err := golog.NewSyslogBackend(name)
+	if err != nil {
+		stdlog.Fatal("Could not setup syslog backend.", err)
+	}
+
+	// Combine them both into one logging backend.
+	golog.SetBackend(logBackend, syslogBackend)
+
+	return &HTTPLogger{name: name, Backends: backends, formatter: formatter, destination: destination}, nil
+
 }
 
 func (log *HTTPLogger) Debug(res http.ResponseWriter, req *http.Request) {
@@ -107,5 +119,5 @@ func fetchStatusCode(res http.ResponseWriter) string {
 
 // Creates new fields and formats using the set formatter.
 func (log *HTTPLogger) format(res http.ResponseWriter, req *http.Request) (string, error) {
-	return log.fmt.Format(newFields(res, req))
+	return log.formatter.Format(newFields(res, req))
 }
