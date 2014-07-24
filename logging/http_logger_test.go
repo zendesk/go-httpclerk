@@ -15,35 +15,62 @@ import (
 
 func TestServerLogger_logLevelSupport_debug(t *testing.T) {
 	logger := loadLogger()
+	res, req := createRequestAndResponse()
 
-	body := new(bufio.Reader)
-	uri := "http://www.foo.com/1234.json"
-	req, _ := http.NewRequest("PUT", uri, body)
-	req.Header.Add("X-Foo-Header", "Bar")
-	res := httptest.NewRecorder()
 	logger.Debug(res, req)
+}
 
-	// m, _ := decodeJSONToMap(buf.String())
-	// if m["@source"] != "fooApp" {
-	// 	t.Error("Debug level not logging correctly")
-	// }
+func TestServerLogger_logLevelSupport_info(t *testing.T) {
+	logger := loadLogger()
+	res, req := createRequestAndResponse()
+
+	logger.Info(res, req)
+}
+
+func TestServerLogger_logLevelSupport_warning(t *testing.T) {
+	logger := loadLogger()
+	res, req := createRequestAndResponse()
+
+	logger.Warning(res, req)
+}
+
+func TestServerLogger_logLevelSupport_error(t *testing.T) {
+	logger := loadLogger()
+	res, req := createRequestAndResponse()
+
+	logger.Error(res, req)
+}
+
+func TestServerLogger_logLevelSupport_critical(t *testing.T) {
+	logger := loadLogger()
+	res, req := createRequestAndResponse()
+
+	logger.Critical(res, req)
 }
 
 func TestBackends(t *testing.T) {
 	formatter, _ := NewLogStashFormatter("fooApp", []string{"blimp", "foo"})
-	logger, _ := NewHTTPLogger("foo", []int{BackendMemory}, formatter)
-	if !contains(logger.Backends, BackendMemory) {
-		t.Error("Memory backend was not set, was", logger.Backends)
-	}
-}
 
-func contains(s []int, e int) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
+	backends := []int{BackendMemory}
+	logger, _ := NewHTTPLogger("foo", backends, formatter)
+
+	if !contains(logger.Backends, BackendMemory) {
+		t.Error("Backend should have been set to {BackendMemory} but was not.")
 	}
-	return false
+
+	backends = []int{BackendMemory, BackendStdOut}
+	logger, _ = NewHTTPLogger("foo", backends, formatter)
+
+	if !contains(logger.Backends, BackendMemory) || !contains(logger.Backends, BackendStdOut) {
+		t.Error("Backend should have been set to {BackendMemory, BackendStdOut} but was not.")
+	}
+
+	backends = []int{BackendMemory, BackendStdOut, BackendSysLog}
+	logger, _ = NewHTTPLogger("foo", backends, formatter)
+
+	if !contains(logger.Backends, BackendMemory) || !contains(logger.Backends, BackendStdOut) || !contains(logger.Backends, BackendSysLog) {
+		t.Error("Backend should have been set to {BackendMemory, BackendStdOut, BackendSysLog} but was not.")
+	}
 }
 
 // func TestServerLogger(t *testing.T) {
@@ -74,11 +101,29 @@ func contains(s []int, e int) bool {
 // Helper functions
 // *************************************
 
+func contains(s []int, e int) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
 func loadLogger() *HTTPLogger {
 	formatter, _ := NewLogStashFormatter("fooApp", []string{"blimp", "foo"})
 
 	requestLogger, _ := NewHTTPLogger("foo", []int{BackendMemory}, formatter)
 	return requestLogger
+}
+
+func createRequestAndResponse() (http.ResponseWriter, *http.Request) {
+	body := new(bufio.Reader)
+	uri := "http://www.foo.com/1234.json"
+	req, _ := http.NewRequest("PUT", uri, body)
+	req.Header.Add("X-Foo-Header", "Bar")
+	res := httptest.NewRecorder()
+	return res, req
 }
 
 // func TestServerLogger_fields(t *testing.T) {
