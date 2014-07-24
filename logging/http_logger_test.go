@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
-	"regexp"
 	"testing"
 )
 
@@ -81,13 +80,6 @@ func TestLogger_fields(t *testing.T) {
 	logger.Info(res, req)
 
 	lastWrite := logger.MemoryBackend.Head().Record.Message()
-	// For some reason we are getting a malformatted string back, e.g.
-	// %!(EXTRA string={"@source":"fooApp","@fields":{"method":"PUT","status":"200","path":"/1234.json","host":"www.foo.com", \
-	// "headers":{"X-Foo-Header":["Bar"]}},"@tags":["blimp","foo"],"@timestamp":"2014-07-24T17:15:55.270529591+01:00"})
-	// for wat of a better solution, regex it out.
-	regex := regexp.MustCompile("{(.)*}")
-	lastWrite = regex.FindAllStringSubmatch(lastWrite, -1)[0][0]
-
 	m, _ := decodeJSONToMap(lastWrite)
 	fields := m["@fields"].(map[string]interface{}) // Coerce again
 
@@ -121,14 +113,7 @@ func TestServerLogger_responseRecorderWithoutStatusMethod(t *testing.T) {
 	res.WriteHeader(http.StatusTeapot)
 
 	logger.Info(res, req)
-
 	lastWrite := logger.MemoryBackend.Head().Record.Message()
-	// For some reason we are getting a malformatted string back, e.g.
-	// %!(EXTRA string={"@source":"fooApp","@fields":{"method":"PUT","status":"200","path":"/1234.json","host":"www.foo.com", \
-	// "headers":{"X-Foo-Header":["Bar"]}},"@tags":["blimp","foo"],"@timestamp":"2014-07-24T17:15:55.270529591+01:00"})
-	// for wat of a better solution, regex it out.
-	regex := regexp.MustCompile("{(.)*}")
-	lastWrite = regex.FindAllStringSubmatch(lastWrite, -1)[0][0]
 
 	m, _ := decodeJSONToMap(lastWrite)
 	fields := m["@fields"].(map[string]interface{}) // Coerce again

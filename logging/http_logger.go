@@ -67,27 +67,27 @@ func NewHTTPLogger(name string, backends []int, formatter Formatter) (*HTTPLogge
 
 func (log *HTTPLogger) Debug(res http.ResponseWriter, req *http.Request) {
 	data, _ := log.format(res, req)
-	log.destination.Debug("", data)
+	log.destination.Debug(data)
 }
 
 func (log *HTTPLogger) Info(res http.ResponseWriter, req *http.Request) {
 	data, _ := log.format(res, req)
-	log.destination.Info("", data)
+	log.destination.Info(data)
 }
 
 func (log *HTTPLogger) Warning(res http.ResponseWriter, req *http.Request) {
 	data, _ := log.format(res, req)
-	log.destination.Warning("", data)
+	log.destination.Warning(data)
 }
 
 func (log *HTTPLogger) Error(res http.ResponseWriter, req *http.Request) {
 	data, _ := log.format(res, req)
-	log.destination.Error("", data)
+	log.destination.Error(data)
 }
 
 func (log *HTTPLogger) Critical(res http.ResponseWriter, req *http.Request) {
 	data, _ := log.format(res, req)
-	log.destination.Critical("", data)
+	log.destination.Critical(data)
 }
 
 // HTTP request fields that should be logged.
