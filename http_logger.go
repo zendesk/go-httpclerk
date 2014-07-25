@@ -1,4 +1,4 @@
-package logging
+package scribe
 
 import (
 	golog "github.com/op/go-logging"
