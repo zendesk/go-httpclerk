@@ -3,6 +3,7 @@ package logging
 import (
 	golog "github.com/op/go-logging"
 	stdlog "log"
+	"log/syslog"
 	"net/http"
 	"os"
 	"strconv"
@@ -40,9 +41,9 @@ func NewHTTPLogger(name string, backends []int, formatter Formatter) (*HTTPLogge
 			logBackend = golog.NewLogBackend(os.Stderr, "", stdlog.LstdFlags|stdlog.Lshortfile)
 			requiredBackends = append(requiredBackends, logBackend)
 		case BackendSysLog:
-			logBackend, err := golog.NewSyslogBackend(name)
+			logBackend, err := golog.NewSyslogBackendPriority(name, syslog.LOG_INFO)
 			if err != nil {
-				stdlog.Fatal("Could not setup syslog backend.", err)
+				stdlog.Fatal("Could not setup syslog backend for ", name, err)
 			}
 			requiredBackends = append(requiredBackends, logBackend)
 		case BackendMemory:
