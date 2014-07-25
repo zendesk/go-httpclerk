@@ -2,10 +2,7 @@ package logging
 
 import (
 	golog "github.com/op/go-logging"
-	stdlog "log"
-	"log/syslog"
 	"net/http"
-	"os"
 	"strconv"
 )
 
@@ -20,50 +17,14 @@ type Formatter interface {
 }
 
 type HTTPLogger struct {
-	name          string
-	Backends      []int
-	formatter     Formatter
-	destination   *golog.Logger
-	MemoryBackend *golog.MemoryBackend // for testing
+	name        string
+	formatter   Formatter
+	destination *golog.Logger
 }
 
 // NewHTTPLogger constructor
-func NewHTTPLogger(name string, backends []int, formatter Formatter) (*HTTPLogger, error) {
-	destination := golog.MustGetLogger(name)
-
-	requiredBackends := make([]golog.Backend, 0)
-	var logBackend golog.Backend
-	var memBackend *golog.MemoryBackend
-
-	for _, backend := range backends {
-		switch backend {
-		case BackendStdOut:
-			logBackend = golog.NewLogBackend(os.Stderr, "", stdlog.LstdFlags|stdlog.Lshortfile)
-			requiredBackends = append(requiredBackends, logBackend)
-		case BackendSysLog:
-			logBackend, err := golog.NewSyslogBackendPriority(name, syslog.LOG_INFO)
-			if err != nil {
-				stdlog.Fatal("Could not setup syslog backend for ", name, err)
-			}
-			requiredBackends = append(requiredBackends, logBackend)
-		case BackendMemory:
-			memBackend = golog.NewMemoryBackend(1024)
-			logBackend = memBackend
-
-			requiredBackends = append(requiredBackends, logBackend)
-		}
-
-	}
-
-	if len(requiredBackends) == 0 {
-		stdlog.Fatal("Please supply at least one backend!")
-	}
-
-	// Set the backend to whatever backends were specified
-	golog.SetBackend(requiredBackends...)
-
-	return &HTTPLogger{name: name, Backends: backends, formatter: formatter, destination: destination, MemoryBackend: memBackend}, nil
-
+func NewHTTPLogger(name string, destination *golog.Logger, formatter Formatter) (*HTTPLogger, error) {
+	return &HTTPLogger{name: name, formatter: formatter, destination: destination}, nil
 }
 
 func (log *HTTPLogger) Debug(res http.ResponseWriter, req *http.Request) {

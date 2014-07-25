@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	golog "github.com/op/go-logging"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -12,74 +13,49 @@ import (
 )
 
 func TestServerLogger_logLevelSupport_debug(t *testing.T) {
-	logger := loadLogger()
+	_, logger := loadLogger()
 	res, req := createRequestAndResponse()
 
 	logger.Debug(res, req)
 }
 
 func TestServerLogger_logLevelSupport_info(t *testing.T) {
-	logger := loadLogger()
+	_, logger := loadLogger()
 	res, req := createRequestAndResponse()
 
 	logger.Info(res, req)
 }
 
 func TestServerLogger_logLevelSupport_warning(t *testing.T) {
-	logger := loadLogger()
+	_, logger := loadLogger()
 	res, req := createRequestAndResponse()
 
 	logger.Warning(res, req)
 }
 
 func TestServerLogger_logLevelSupport_error(t *testing.T) {
-	logger := loadLogger()
+	_, logger := loadLogger()
 	res, req := createRequestAndResponse()
 
 	logger.Error(res, req)
 }
 
 func TestServerLogger_logLevelSupport_critical(t *testing.T) {
-	logger := loadLogger()
+	_, logger := loadLogger()
 	res, req := createRequestAndResponse()
 
 	logger.Critical(res, req)
 }
 
-func TestBackends(t *testing.T) {
-	formatter, _ := NewLogStashFormatter("fooApp", []string{"blimp", "foo"})
-
-	backends := []int{BackendMemory}
-	logger, _ := NewHTTPLogger("foo", backends, formatter)
-
-	if !contains(logger.Backends, BackendMemory) {
-		t.Error("Backend should have been set to {BackendMemory} but was not.")
-	}
-
-	backends = []int{BackendMemory, BackendStdOut}
-	logger, _ = NewHTTPLogger("foo", backends, formatter)
-
-	if !contains(logger.Backends, BackendMemory) || !contains(logger.Backends, BackendStdOut) {
-		t.Error("Backend should have been set to {BackendMemory, BackendStdOut} but was not.")
-	}
-
-	backends = []int{BackendMemory, BackendStdOut, BackendSysLog}
-	logger, _ = NewHTTPLogger("foo", backends, formatter)
-
-	if !contains(logger.Backends, BackendMemory) || !contains(logger.Backends, BackendStdOut) || !contains(logger.Backends, BackendSysLog) {
-		t.Error("Backend should have been set to {BackendMemory, BackendStdOut, BackendSysLog} but was not.")
-	}
-}
-
 func TestLogger_fields(t *testing.T) {
-	logger := loadLogger()
+	memBackend, logger := loadLogger()
 	res, req := createRequestAndResponse()
 	res = newWrappedRecorder()
 	res.WriteHeader(http.StatusOK)
 
 	logger.Info(res, req)
 
-	lastWrite := logger.MemoryBackend.Head().Record.Message()
+	lastWrite := memBackend.Head().Record.Message()
 	m, _ := decodeJSONToMap(lastWrite)
 	fields := m["@fields"].(map[string]interface{}) // Coerce again
 
@@ -107,13 +83,13 @@ func TestLogger_fields(t *testing.T) {
 }
 
 func TestServerLogger_responseRecorderWithoutStatusMethod(t *testing.T) {
-	logger := loadLogger()
+	memBackend, logger := loadLogger()
 	res, req := createRequestAndResponse()
 	res = httptest.NewRecorder()
 	res.WriteHeader(http.StatusTeapot)
 
 	logger.Info(res, req)
-	lastWrite := logger.MemoryBackend.Head().Record.Message()
+	lastWrite := memBackend.Head().Record.Message()
 
 	m, _ := decodeJSONToMap(lastWrite)
 	fields := m["@fields"].(map[string]interface{}) // Coerce again
@@ -136,11 +112,18 @@ func contains(s []int, e int) bool {
 	return false
 }
 
-func loadLogger() *HTTPLogger {
+func loadLogger() (*golog.MemoryBackend, *HTTPLogger) {
+	log := golog.MustGetLogger("test")
 	formatter, _ := NewLogStashFormatter("fooApp", []string{"blimp", "foo"})
 
-	logger, _ := NewHTTPLogger("foo", []int{BackendMemory}, formatter)
-	return logger
+	// Setup one stdout and one syslog backend.
+	memBackend := golog.NewMemoryBackend(1024)
+
+	// Combine them both into one logging backend and set the log level
+	golog.SetBackend(memBackend)
+
+	logger, _ := NewHTTPLogger("foo", log, formatter)
+	return memBackend, logger
 }
 
 func createRequestAndResponse() (http.ResponseWriter, *http.Request) {
