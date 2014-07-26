@@ -3,7 +3,6 @@ package httpclerk
 import (
 	"fmt"
 	"os"
-	"time"
 )
 
 type TextFormatter struct {
@@ -21,8 +20,8 @@ func (f *fields) String() string {
 
 func (f *TextFormatter) Format(customFields interface{}) (string, error) {
 	host, _ := os.Hostname()
-	data := `%s %s %s > %s`
-	data = fmt.Sprintf(data, time.Now().Format(time.StampMilli), f.AppName, host, customFields)
+	data := `%s %s > %s`
+	data = fmt.Sprintf(data, f.AppName, host, customFields)
 
 	return data, nil
 }
