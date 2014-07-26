@@ -9,8 +9,8 @@ type TextFormatter struct {
 	AppName string
 }
 
-func NewTextFormatter() (*TextFormatter, error) {
-	return &TextFormatter{"testApp"}, nil
+func NewTextFormatter(appName string) (*TextFormatter, error) {
+	return &TextFormatter{appName}, nil
 }
 
 func (f *fields) String() string {
