@@ -1,16 +1,18 @@
-package scribe
+package httpclerk
 
 import (
-	golog "github.com/op/go-logging"
 	"net/http"
 	"strconv"
 )
 
-const (
-	BackendStdOut = iota
-	BackendSysLog
-	BackendMemory
-)
+// Implements similar to http://godoc.org/github.com/op/go-logging#Logger
+type LogDestination interface {
+	Debug(data string, args ...interface{})
+	Info(data string, args ...interface{})
+	Warning(data string, args ...interface{})
+	Error(data string, args ...interface{})
+	Critical(data string, args ...interface{})
+}
 
 type Formatter interface {
 	Format(interface{}) (string, error)
@@ -19,11 +21,11 @@ type Formatter interface {
 type HTTPLogger struct {
 	name        string
 	formatter   Formatter
-	destination *golog.Logger
+	destination LogDestination
 }
 
 // NewHTTPLogger constructor
-func NewHTTPLogger(name string, destination *golog.Logger, formatter Formatter) (*HTTPLogger, error) {
+func NewHTTPLogger(name string, destination LogDestination, formatter Formatter) (*HTTPLogger, error) {
 	return &HTTPLogger{name: name, formatter: formatter, destination: destination}, nil
 }
 

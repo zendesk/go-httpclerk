@@ -1,4 +1,4 @@
-package scribe
+package httpclerk
 
 import (
 	"encoding/json"
