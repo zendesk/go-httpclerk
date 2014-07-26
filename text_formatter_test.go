@@ -6,7 +6,7 @@ import (
 )
 
 func TestTextFormat(t *testing.T) {
-	formatter, _ := NewTextFormatter()
+	formatter, _ := NewTextFormatter("testApp")
 
 	fields := &fields{
 		"GET",
@@ -26,7 +26,12 @@ func TestTextFormat(t *testing.T) {
 	// testApp 1974-carcher.local > Method: GET Path: /foo/bar Status: 200 Host: dill.on.com Headers: map[X-Foo:[Gaz] X-Baz:[Blerg]]
 	// We expect the timestamp to be prepended by the log backend.
 
-	r, _ := regexp.Compile(`Host: (.)*`)
+	r, _ := regexp.Compile(`testApp`)
+	if !r.MatchString(data) {
+		t.Error("Ap name not formatted correctly.")
+	}
+
+	r, _ = regexp.Compile(`Host: (.)*`)
 	if !r.MatchString(data) {
 		t.Error("Host not formatted correctly.")
 	}
