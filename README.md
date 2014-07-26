@@ -1,6 +1,6 @@
-go-scribe
+go-httpclerk
 ==============
 
-A simple HTTP request logger for Go supporting multiple formatters.
+A simple HTTP request/response logger for Go supporting multiple formatters.
 
 
