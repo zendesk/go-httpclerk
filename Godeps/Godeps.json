@@ -1,0 +1,13 @@
+{
+	"ImportPath": "github.com/zendesk/go-httpclerk",
+	"GoVersion": "go1.3",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/op/go-logging",
+			"Rev": "c1b91128b40ead0e98dbc63cde57c0541feaa6c1"
+		}
+	]
+}
