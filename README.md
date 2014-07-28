@@ -11,7 +11,7 @@ We needed a way to log HTTP requests at Zendesk to different log backends (stdou
 
 ## Usage
 
-You'll need to create some sort of logger that confroms to the `LogDestination` interface in this package. The [go-logger](https://github.com/op/go-logging) package is recommended.
+You'll need to create some sort of logger that conforms to the `LogDestination` interface in this package. The [go-logger](https://github.com/op/go-logging) package is recommended.
 
 ### Simple example:
 
@@ -84,5 +84,5 @@ type Formatter interface {
 
 ## Contributing
 
-Create a Pull Request with your changes, ping @ciaranarcher and we'll look at getting it merged. 
+Create a Pull Request with your changes, ping someone and we'll look at getting it merged. 
 
