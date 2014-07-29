@@ -1,0 +1,7 @@
+language: go
+go:
+  - 1.3
+before_install:
+  - go get github.com/tools/godep
+  - export PATH=$HOME/gopath/bin:$PATH
+script: godep go test -v -race ./...
