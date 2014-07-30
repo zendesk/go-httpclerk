@@ -7,7 +7,7 @@ A simple HTTP request/response logger for Go supporting multiple formatters.
 
 ## Rationale
 
-We needed a way to log HTTP requests at Zendesk to different log backends (stdout, syslog etc.) with multiple ways to format them (including logstash). So we created this project to help us. 
+We needed a way to log HTTP requests at Zendesk to different log backends (stdout, syslog etc.) with multiple ways to format them (including logstash). So we created this project to help us.
 
 ## Usage
 
@@ -52,7 +52,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-This will produce logs like so: 
+This will produce logs like so:
 
 ```
 2014/07/27 07:43:56 http_logger.go:39: myHandler 1974-carcher.local > Method: GET Path: /ciaran Status:  Host: localhost:8080 Headers: map[User-Agent:[curl/7.30.0] Accept:[*/*]]
@@ -84,5 +84,4 @@ type Formatter interface {
 
 ## Contributing
 
-Create a Pull Request with your changes, ping someone and we'll look at getting it merged. 
-
+Create a Pull Request with your changes, ping someone and we'll look at getting it merged.
